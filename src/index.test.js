@@ -77,9 +77,18 @@ describe("Gameboard tests", () => {
         }
       });
     });
-    const isAllShips = occupiedCells.every((cell) => cell.type === Cell.Types.SHIP);
+    const isAllShips = occupiedCells.every(
+      (cell) => cell.type === Cell.Types.SHIP
+    );
     expect(isAllShips).toBe(true);
   });
+
+  test("receiveAttack function hits ships as expected.", () => {
+    const game = new Gameboard();
+    const target = game.players[0].ships[0];
+    game.receiveAttack(target.location);
+    expect(target.hits).toBeGreaterThan(0);
+  })
 });
 
 describe("Cell tests", () => {
@@ -92,6 +101,16 @@ describe("Cell tests", () => {
     const testType = Cell.Types.SHIP;
     const cell = new Cell([0, 0], testType);
     expect(cell.type).toBe(testType);
+  });
+
+  test("Cell coordinates are set via constructor.", () => {
+    const cell = new Cell([0, 0]);
+    const isOrigin =
+      cell.coordinates.length === 2 &&
+      cell.coordinates.every(
+        (member) => Number.isInteger(member) && member === 0
+      );
+    expect(isOrigin).toBe(true);
   });
 });
 

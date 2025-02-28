@@ -1,4 +1,4 @@
-import "./style.css";
+//import "./style.css";
 
 export class Ship {
   constructor(length = 2, orientation = Ship.Orientations.HORIZONTAL) {
@@ -44,10 +44,11 @@ export class Gameboard {
   }
 
   createBoard() {
-    for (let i = 0; i < this.rows; i++) {
+    for (let i = 0; i < this.columns; i++) {
       this.board[i] = [];
-      for (let j = 0; j < this.columns; j++) {
-        this.board[i].push(new Cell([j, i]));
+      for (let j = 0; j < this.rows; j++) {
+        // Use j and i as x and y coordinates.
+        this.board[i].push(new Cell([i, j]));
       }
     }
   }
@@ -112,6 +113,66 @@ export class Gameboard {
       }
     }
   }
+
+  receiveAttack(targetCoordinates) {
+    let allShipCells = [];
+    this.players.forEach((player) => {
+      player.ships.forEach((ship) => {
+        const cellArray = this.getCellLocations(ship.location, ship);
+        allShipCells.push(cellArray);
+      });
+    });
+    // Case: the attack hit a ship.
+    for (const shipArray of allShipCells) {
+      if (this.containsTarget(shipArray, targetCoordinates)) {
+        const targetShip = this.getShipFromLocation(shipArray[0]);
+        targetShip.hit();
+      }
+    }
+  }
+
+  getCellLocations(coordinates, ship) {
+    const cellArray = [];
+    const [x, y] = coordinates;
+    for (let i = 0; i < ship.length; i++) {
+      if (ship.orientation === Ship.Orientations.HORIZONTAL) {
+        cellArray.push(this.board[x][y + i].coordinates);
+      } else if (ship.orientation === Ship.Orientations.VERTICAL) {
+        cellArray.push(this.board[x + i][y].coordinates);
+      }
+    }
+    return cellArray;
+  }
+
+  containsTarget(array, target) {
+    if (
+      !Array.isArray(array) ||
+      !Array.isArray(target) ||
+      target.length !== 2
+    ) {
+      return false;
+    }
+
+    const [targetX, targetY] = target;
+    return array.some((coordinate) => {
+      return (
+        Array.isArray(coordinate) &&
+        coordinate.length === 2 &&
+        coordinate[0] === targetX &&
+        coordinate[1] === targetY
+      );
+    });
+  }
+
+  getShipFromLocation(coordinates) {
+    const [x, y] = coordinates;
+    for (const player of this.players) {
+      for (const ship of player.ships) {
+        const [shipX, shipY] = ship.location;
+        if (shipX === x && shipY === y) return ship;
+      }
+    }
+  }
 }
 
 export class Cell {
@@ -136,6 +197,3 @@ export class Player {
     this.ships = [];
   }
 }
-
-const game = new Gameboard();
-console.log(game.board);
