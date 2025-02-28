@@ -37,18 +37,10 @@ describe("Gameboard tests", () => {
     expect(game.board[0][0]).toBeInstanceOf(Cell);
   });
 
-  test("Gameboard Cells default type is Ocean.", () => {
-    const game = new Gameboard();
-    const isAllOceans = game.board.every((row) =>
-      row.every((cell) => cell.type === "Ocean")
-    );
-    expect(isAllOceans).toBe(true);
-  });
-
   test("Gameboard creates ships for each player.", () => {
     const game = new Gameboard();
-    const isAllShips = game.players.every(player =>
-      player.ships.every(ship => ship instanceof Ship)
+    const isAllShips = game.players.every((player) =>
+      player.ships.every((ship) => ship instanceof Ship)
     );
     expect(isAllShips).toBe(true);
   });
@@ -57,17 +49,48 @@ describe("Gameboard tests", () => {
     const game = new Gameboard();
     expect(game.players[0].ships.length).toBe(game.shipCount);
   });
+
+  test("Gameboard initializes each ship location.", () => {
+    const game = new Gameboard();
+    game.players.forEach((player) => {
+      player.ships.forEach((ship) => {
+        expect(ship).toHaveProperty("location");
+      });
+    });
+  });
+
+  test("Each cell with a ship on it is of type Ship.", () => {
+    const game = new Gameboard();
+    const occupiedCells = [];
+    game.players.forEach((player) => {
+      player.ships.forEach((ship) => {
+        for (let i = 0; i < ship.length; i++) {
+          if (ship.orientation === Ship.Orientations.HORIZONTAL) {
+            occupiedCells.push(
+              game.board[ship.location[0]][ship.location[1] + i]
+            );
+          } else if (ship.orientation === Ship.Orientations.VERTICAL) {
+            occupiedCells.push(
+              game.board[ship.location[0] + i][ship.location[1]]
+            );
+          }
+        }
+      });
+    });
+    const isAllShips = occupiedCells.every((cell) => cell.type === Cell.Types.SHIP);
+    expect(isAllShips).toBe(true);
+  });
 });
 
 describe("Cell tests", () => {
   test("Default cell type is Ocean.", () => {
-    const cell = new Cell();
-    expect(cell.type).toBe("Ocean");
+    const cell = new Cell([0, 0]);
+    expect(cell.type).toBe(Cell.Types.OCEAN);
   });
 
   test("Cell type is set via constructor.", () => {
-    const testType = "Ship";
-    const cell = new Cell(testType);
+    const testType = Cell.Types.SHIP;
+    const cell = new Cell([0, 0], testType);
     expect(cell.type).toBe(testType);
   });
 });

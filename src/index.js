@@ -47,7 +47,7 @@ export class Gameboard {
     for (let i = 0; i < this.rows; i++) {
       this.board[i] = [];
       for (let j = 0; j < this.columns; j++) {
-        this.board[i].push(new Cell([i, j]));
+        this.board[i].push(new Cell([j, i]));
       }
     }
   }
@@ -96,6 +96,7 @@ export class Gameboard {
             (cell) => cell.type === Cell.Types.OCEAN
           );
           if (isAllOceans) return [i, j];
+          // Else discard the cell and check the next one.
         } else if (ship.orientation === Ship.Orientations.VERTICAL) {
           if (i + ship.length > this.rows) continue;
 
