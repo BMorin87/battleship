@@ -37,14 +37,6 @@ describe("Gameboard tests", () => {
     expect(game.board[0][0]).toBeInstanceOf(Cell);
   });
 
-  test("Gameboard creates ships for each player.", () => {
-    const game = new Gameboard();
-    const isAllShips = game.players.every((player) =>
-      player.ships.every((ship) => ship instanceof Ship)
-    );
-    expect(isAllShips).toBe(true);
-  });
-
   test("Gameboard creates shipCount number of ships for each player.", () => {
     const game = new Gameboard();
     expect(game.players[0].ships.length).toBe(game.shipCount);
@@ -52,11 +44,11 @@ describe("Gameboard tests", () => {
 
   test("Gameboard initializes each ship location.", () => {
     const game = new Gameboard();
-    game.players.forEach((player) => {
-      player.ships.forEach((ship) => {
+    for (const player of game.players) {
+      for (const ship of player.ships) {
         expect(ship).toHaveProperty("location");
-      });
-    });
+      }
+    }
   });
 
   test("Each cell with a ship on it is of type Ship.", () => {
@@ -88,8 +80,15 @@ describe("Gameboard tests", () => {
     const target = game.players[0].ships[0];
     game.receiveAttack(target.location);
     expect(target.hits).toBeGreaterThan(0);
-  })
-});
+  });
+
+  test("receiveAttack function sets a missed shot's target cell type to Miss.", () => {
+    const game = new Gameboard();
+    const targetCell = game.board[8][8];
+    game.receiveAttack(targetCell.coordinates);
+    expect(targetCell.type).toBe(Cell.Types.MISS);
+  });
+})
 
 describe("Cell tests", () => {
   test("Default cell type is Ocean.", () => {

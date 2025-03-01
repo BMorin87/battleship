@@ -79,7 +79,7 @@ export class Gameboard {
   getFirstLegalPosition(ship) {
     for (let j = 0; j < this.rows; j++) {
       for (let i = 0; i < this.columns; i++) {
-        if (this.isOutOfBounds(i, j, ship)) continue;
+        if (this.shipIsOutOfBounds(i, j, ship)) continue;
 
         const testCells = this.getShipCells([i, j], ship);
         const isAllOceans = testCells.every(
@@ -91,7 +91,7 @@ export class Gameboard {
     }
   }
 
-  isOutOfBounds(x, y, ship) {
+  shipIsOutOfBounds(x, y, ship) {
     if (
       (ship.orientation === Ship.Orientations.HORIZONTAL &&
         x + ship.length > this.columns) ||
@@ -120,7 +120,14 @@ export class Gameboard {
       if (this.containsTarget(coordinates, targetCoordinates)) {
         const targetShip = this.getShipFromLocation(coordinates[0]);
         targetShip.hit();
+        return;
       }
+    }
+    // Case: the attack missed a ship.
+    const [x, y] = targetCoordinates;
+    const targetCell = this.board[targetCoordinates[0]][targetCoordinates[1]];
+    if (targetCell.type === Cell.Types.OCEAN) {
+      targetCell.setType(Cell.Types.MISS);
     }
   }
 
@@ -177,6 +184,7 @@ export class Cell {
   static Types = Object.freeze({
     OCEAN: "Ocean",
     SHIP: "Ship",
+    MISS: "Miss",
   });
 }
 
@@ -186,6 +194,3 @@ export class Player {
     this.ships = [];
   }
 }
-
-const game = new Gameboard();
-console.log(game.board);
