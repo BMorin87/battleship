@@ -32,8 +32,8 @@ export class Ship {
 
 export class Gameboard {
   constructor(length = 9, width = 9, shipCount = 5) {
-    this.rows = length;
-    this.columns = width;
+    this.columns = length;
+    this.rows = width;
     this.players = [new Player(), new Player()];
     this.shipCount = shipCount;
     this.board = [];
@@ -54,102 +54,91 @@ export class Gameboard {
   }
 
   createShips() {
-    this.players.forEach((player) => {
+    for (const player of this.players) {
       for (let i = 0; i < this.shipCount; i++) {
         player.ships.push(new Ship());
       }
-    });
+    }
   }
 
   placeShips() {
-    this.players.forEach((player) => {
-      player.ships.forEach((ship) => {
+    for (const player of this.players) {
+      for (const ship of player.ships) {
         const coordinates = this.getFirstLegalPosition(ship);
         ship.setLocation(coordinates);
-        // Set board cells to Ship type.
-        for (let i = 0; i < ship.length; i++) {
-          if (ship.orientation === Ship.Orientations.HORIZONTAL) {
-            const currentCell = this.board[coordinates[0]][coordinates[1] + i];
-            currentCell.type = Cell.Types.SHIP;
-          } else if (ship.orientation === Ship.Orientations.VERTICAL) {
-            const currentCell = this.board[coordinates[0] + i][coordinates[1]];
-            currentCell.type = Cell.Types.SHIP;
-          }
-        }
-      });
-    });
-  }
 
-  // Find the first cell where the ship fits.
-  getFirstLegalPosition(ship) {
-    for (let i = 0; i < this.columns; i++) {
-      for (let j = 0; j < this.rows; j++) {
-        if (ship.orientation === Ship.Orientations.HORIZONTAL) {
-          // Test if the ship stays within bounds.
-          if (j + ship.length > this.columns) continue;
-
-          // Test if the tiles are Oceans.
-          const testCells = [];
-          for (let k = 0; k < ship.length; k++) {
-            testCells.push(this.board[i][j + k]);
-          }
-          const isAllOceans = testCells.every(
-            (cell) => cell.type === Cell.Types.OCEAN
-          );
-          if (isAllOceans) return [i, j];
-          // Else discard the cell and check the next one.
-        } else if (ship.orientation === Ship.Orientations.VERTICAL) {
-          if (i + ship.length > this.rows) continue;
-
-          const testCells = [];
-          for (let k = 0; k < ship.length; k++) {
-            testCells.push(this.board[i][j + k]);
-          }
-          const isAllOceans = testCells.every(
-            (cell) => cell.type === Cell.Types.OCEAN
-          );
-          if (isAllOceans) return [i, j];
+        const shipCells = this.getShipCells(coordinates, ship);
+        for (const cell of shipCells) {
+          cell.setType(Cell.Types.SHIP);
         }
       }
     }
   }
 
+  // Find the first cell where the ship fits.
+  getFirstLegalPosition(ship) {
+    for (let j = 0; j < this.rows; j++) {
+      for (let i = 0; i < this.columns; i++) {
+        if (this.isOutOfBounds(i, j, ship)) continue;
+
+        const testCells = this.getShipCells([i, j], ship);
+        const isAllOceans = testCells.every(
+          (cell) => cell.type === Cell.Types.OCEAN
+        );
+        // Success, return the valid ship coordinates.
+        if (isAllOceans) return [i, j];
+      }
+    }
+  }
+
+  isOutOfBounds(x, y, ship) {
+    if (
+      (ship.orientation === Ship.Orientations.HORIZONTAL &&
+        x + ship.length > this.columns) ||
+      (ship.orientation === Ship.Orientations.VERTICAL &&
+        y + ship.length > this.rows)
+    )
+      return true;
+    return false;
+  }
+
   receiveAttack(targetCoordinates) {
+    // Get an array of arrays that contain each ship's cells.
     let allShipCells = [];
-    this.players.forEach((player) => {
-      player.ships.forEach((ship) => {
-        const cellArray = this.getCellLocations(ship.location, ship);
-        allShipCells.push(cellArray);
-      });
-    });
+    for (const player of this.players) {
+      for (const ship of player.ships) {
+        const shipArray = this.getShipCells(ship.location, ship);
+        allShipCells.push(shipArray);
+      }
+    }
     // Case: the attack hit a ship.
-    for (const shipArray of allShipCells) {
-      if (this.containsTarget(shipArray, targetCoordinates)) {
-        const targetShip = this.getShipFromLocation(shipArray[0]);
+    for (const cellArray of allShipCells) {
+      const coordinates = [];
+      for (const cell of cellArray) {
+        coordinates.push(cell.coordinates);
+      }
+      if (this.containsTarget(coordinates, targetCoordinates)) {
+        const targetShip = this.getShipFromLocation(coordinates[0]);
         targetShip.hit();
       }
     }
   }
 
-  getCellLocations(coordinates, ship) {
+  getShipCells(coordinates, ship) {
     const cellArray = [];
     const [x, y] = coordinates;
     for (let i = 0; i < ship.length; i++) {
       if (ship.orientation === Ship.Orientations.HORIZONTAL) {
-        cellArray.push(this.board[x][y + i].coordinates);
+        cellArray.push(this.board[x + i][y]);
       } else if (ship.orientation === Ship.Orientations.VERTICAL) {
-        cellArray.push(this.board[x + i][y].coordinates);
+        cellArray.push(this.board[x][y + i]);
       }
     }
     return cellArray;
   }
 
   containsTarget(array, target) {
-    if (
-      !Array.isArray(array) ||
-      !Array.isArray(target) ||
-      target.length !== 2
-    ) {
+    if (!Array.isArray(target) || target.length !== 2) {
       return false;
     }
 
@@ -197,3 +186,6 @@ export class Player {
     this.ships = [];
   }
 }
+
+const game = new Gameboard();
+console.log(game.board);

@@ -67,11 +67,11 @@ describe("Gameboard tests", () => {
         for (let i = 0; i < ship.length; i++) {
           if (ship.orientation === Ship.Orientations.HORIZONTAL) {
             occupiedCells.push(
-              game.board[ship.location[0]][ship.location[1] + i]
+              game.board[ship.location[0] + i][ship.location[1]]
             );
           } else if (ship.orientation === Ship.Orientations.VERTICAL) {
             occupiedCells.push(
-              game.board[ship.location[0] + i][ship.location[1]]
+              game.board[ship.location[0]][ship.location[1] + i]
             );
           }
         }
