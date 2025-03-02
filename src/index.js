@@ -37,6 +37,7 @@ export class Gameboard {
     this.players = [new Player(), new Player()];
     this.shipCount = shipCount;
     this.board = [];
+    this.missedShots = new Set();
 
     this.createBoard();
     this.createShips();
@@ -129,6 +130,8 @@ export class Gameboard {
     if (targetCell.type === Cell.Types.OCEAN) {
       targetCell.setType(Cell.Types.MISS);
     }
+    this.missedShots.add(targetCoordinates);
+
   }
 
   getShipCells(coordinates, ship) {

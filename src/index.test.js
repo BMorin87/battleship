@@ -85,9 +85,22 @@ describe("Gameboard tests", () => {
   test("receiveAttack function sets a missed shot's target cell type to Miss.", () => {
     const game = new Gameboard();
     const targetCell = game.board[8][8];
-    game.receiveAttack(targetCell.coordinates);
+    // Ideally get specifically an Ocean cell rather than one I think will miss.
+    if (targetCell.type === Cell.Types.OCEAN) {
+      game.receiveAttack(targetCell.coordinates);
+    }
     expect(targetCell.type).toBe(Cell.Types.MISS);
   });
+
+  test("Missed shots are recorded.", () => {
+    const game = new Gameboard();
+    const targetCell = game.board[8][8];
+    if (targetCell.type === Cell.Types.OCEAN) {
+      game.receiveAttack(targetCell.coordinates);
+    }
+    const isRecorded = game.missedShots.has(targetCell.coordinates);
+    expect(isRecorded).toBe(true);
+  })
 })
 
 describe("Cell tests", () => {
