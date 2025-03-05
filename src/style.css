@@ -1,3 +1,29 @@
 body {
     background-color: cyan;
 }
+
+.gridContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gameContainer {
+    display: flex;
+    gap: 32px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(var(--columns), 1fr);
+    grid-template-rows: repeat(var(--rows), 1fr);
+    border: 1px solid black;
+}
+
+.gameCell {
+    background-color: white;
+    border: 1px solid black;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+}
