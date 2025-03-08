@@ -93,17 +93,17 @@ export class Gameboard {
         if (this.containsTarget(coordinates, targetCoordinates)) {
           const targetShip = this.getShipFromLocation(coordinates[0]);
           targetShip.hit();
-          return;
+          return true;
         }
       }
       // Case: the attack missed a ship.
       const [x, y] = targetCoordinates;
-      const targetCell = this.board[targetCoordinates[0]][targetCoordinates[1]];
+      const targetCell = this.board[x][y];
       if (targetCell.type === Cell.Types.OCEAN) {
         targetCell.setType(Cell.Types.MISS);
       }
       this.missedShots.add(targetCoordinates);
-  
+      return false;
     }
   
     getShipCells(coordinates, ship) {

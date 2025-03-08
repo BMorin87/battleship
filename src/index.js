@@ -19,12 +19,14 @@ class UIManager {
 
     this.createGridWithCoordinates(this.shipGridDiv);
     this.createGridWithCoordinates(this.targetGridDiv);
-    
+
     this.drawShips(this.game.players[0]);
+
+    this.addTargetEventListeners(this.targetGridDiv);
   }
 
   createGridWithCoordinates(gridDiv) {
-    // Add column headers (numbers)
+    // Add column headers (numbers).
     for (let i = 0; i <= this.game.columns; i++) {
       const cell = document.createElement("div");
       cell.classList.add("gameCell", "coordinateCell");
@@ -37,15 +39,15 @@ class UIManager {
       gridDiv.appendChild(cell);
     }
 
-    // Add rows with row headers (letters)
+    // Add rows.
     for (let j = 0; j < this.game.rows; j++) {
-      // Add row header (letter)
+      // Add row header (letter).
       const rowLabel = document.createElement("div");
       rowLabel.classList.add("gameCell", "coordinateCell", "rowHeader");
       rowLabel.textContent = String.fromCharCode(65 + j); // A, B, C, etc.
       gridDiv.appendChild(rowLabel);
 
-      // Add regular cells
+      // Add regular cells.
       for (let i = 0; i < this.game.columns; i++) {
         const cell = document.createElement("div");
         cell.classList.add("gameCell");
@@ -55,23 +57,6 @@ class UIManager {
       }
     }
   }
-
-  // This searches game cells for a Ship type and colors the cell on the page.
-  /* colorShipCells() {
-    const cellDivs = this.shipGridDiv.children;
-    this.game.board.flat().forEach((cell) => {
-      if (cell.type === Cell.Types.SHIP) {
-        for (const cellDiv of cellDivs) {
-          if (
-            cellDiv.dataset.row == cell.coordinates[0] &&
-            cellDiv.dataset.col == cell.coordinates[1]
-          ) {
-            cellDiv.classList.add("shipCell");
-          }
-        }
-      }
-    });
-  } */
 
   drawShips(player) {
     const shipCells = [];
@@ -91,7 +76,46 @@ class UIManager {
       }
     }
   }
+
+  addTargetEventListeners(gridDiv) {
+    // Get only the gameboard cells, not coordinate cells.
+    const gameCells = [...gridDiv.children].filter(
+      (gameCell) => gameCell.dataset["row"] !== undefined
+    );
+
+    for (const cell of gameCells) {
+      cell.addEventListener(
+        "mouseenter",
+        this.targetGridOnMouseEnter.bind(this)
+      );
+      cell.addEventListener(
+        "mouseleave",
+        this.targetGridOnMouseLeave.bind(this)
+      );
+      cell.addEventListener("click", this.targetGridOnClick.bind(this));
+    }
+  }
+
+  targetGridOnMouseEnter(event) {
+    const cell = event.target;
+    cell.classList.add("hovered");
+  }
+
+  targetGridOnMouseLeave(event) {
+    const cell = event.target;
+    cell.classList.remove("hovered");
+  }
+
+  targetGridOnClick(event) {
+    const cellDiv = event.target;
+    const gameCell = this.game.board[cellDiv.dataset.row][cellDiv.dataset.col];
+    const isHit = this.game.receiveAttack(gameCell.coordinates);
+    if (isHit) {
+      cellDiv.classList.add("hit");
+    } else {
+      cellDiv.classList.add("miss");
+    }
+  }
 }
 
-const ui = new UIManager();
-console.log(ui.game.board);
+new UIManager();
