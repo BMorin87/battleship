@@ -34,6 +34,10 @@ body {
     align-items: center;
 }
 
+.shipCell {
+    background-color: blueviolet;
+}
+
 .coordinateCell {
     background-color: #f0f0f0;
     font-weight: bold;

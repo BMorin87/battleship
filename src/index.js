@@ -6,7 +6,7 @@ import { Ship } from "./ship.js";
 
 class UIManager {
   constructor() {
-    this.game = new Gameboard(7, 7);
+    this.game = new Gameboard();
     this.gameContainerDiv = document.querySelector(".gameContainer");
     this.shipGridDiv = this.gameContainerDiv.querySelector("#shipGrid");
     this.targetGridDiv = this.gameContainerDiv.querySelector("#targetGrid");
@@ -19,6 +19,8 @@ class UIManager {
 
     this.createGridWithCoordinates(this.shipGridDiv);
     this.createGridWithCoordinates(this.targetGridDiv);
+    
+    this.drawShips(this.game.players[0]);
   }
 
   createGridWithCoordinates(gridDiv) {
@@ -53,6 +55,43 @@ class UIManager {
       }
     }
   }
+
+  // This searches game cells for a Ship type and colors the cell on the page.
+  /* colorShipCells() {
+    const cellDivs = this.shipGridDiv.children;
+    this.game.board.flat().forEach((cell) => {
+      if (cell.type === Cell.Types.SHIP) {
+        for (const cellDiv of cellDivs) {
+          if (
+            cellDiv.dataset.row == cell.coordinates[0] &&
+            cellDiv.dataset.col == cell.coordinates[1]
+          ) {
+            cellDiv.classList.add("shipCell");
+          }
+        }
+      }
+    });
+  } */
+
+  drawShips(player) {
+    const shipCells = [];
+    for (const ship of player.ships) {
+      const cells = this.game.getShipCells(ship.location, ship);
+      shipCells.push(...cells);
+    }
+    const cellDivs = this.shipGridDiv.children;
+    for (const cell of shipCells) {
+      for (const cellDiv of cellDivs) {
+        if (
+          cellDiv.dataset.row == cell.coordinates[0] &&
+          cellDiv.dataset.col == cell.coordinates[1]
+        ) {
+          cellDiv.classList.add("shipCell");
+        }
+      }
+    }
+  }
 }
 
-new UIManager();
+const ui = new UIManager();
+console.log(ui.game.board);
