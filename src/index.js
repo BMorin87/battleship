@@ -7,6 +7,7 @@ import { Ship } from "./ship.js";
 class UIManager {
   constructor() {
     this.game = new Gameboard();
+    this.currentPlayer = this.game.players[0];
     this.gameContainerDiv = document.querySelector(".gameContainer");
     this.shipGridDiv = this.gameContainerDiv.querySelector("#shipGrid");
     this.targetGridDiv = this.gameContainerDiv.querySelector("#targetGrid");
@@ -109,7 +110,10 @@ class UIManager {
   targetGridOnClick(event) {
     const cellDiv = event.target;
     const gameCell = this.game.board[cellDiv.dataset.row][cellDiv.dataset.col];
-    const isHit = this.game.receiveAttack(gameCell.coordinates);
+    const isHit = this.game.receiveAttack(
+      gameCell.coordinates,
+      this.currentPlayer
+    );
     if (isHit) {
       cellDiv.classList.add("hit");
     } else {
