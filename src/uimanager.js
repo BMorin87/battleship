@@ -1,15 +1,15 @@
-import { Gameboard } from "./gameboard.js";
 import { Player } from "./player.js";
 
 export class UIManager {
   constructor() {
-    this.game = new Gameboard();
     this.players = [new Player(), new Player(Player.Types.CPU)];
     this.currentPlayer = this.players[0];
     this.gameContainerDiv = document.querySelector(".gameContainer");
     this.shipGridDiv = document.querySelector("#shipGrid");
     this.targetGridDiv = document.querySelector("#targetGrid");
     this.gameStatusDiv = document.querySelector(".gameStatus");
+    // A reference to this event is needed so that it can be removed.
+    this.boundTargetGridOnClick = this.targetGridOnClick.bind(this);
 
     this.setGridRowsAndColumns(this.currentPlayer);
     this.createGridWithCoordinates(this.shipGridDiv);
@@ -21,7 +21,7 @@ export class UIManager {
     startButton.addEventListener("click", () => {
       this.addTargetGridEventListeners(this.targetGridDiv);
       this.targetGridDiv.classList.add("game-active");
-      this.gameStatusDiv.textContent = "Your turn - fire at enemy waters!"
+      this.gameStatusDiv.textContent = UIManager.statusMessages.YOURTURN;
     });
   }
 
@@ -87,7 +87,7 @@ export class UIManager {
   }
 
   addTargetGridEventListeners(gridDiv) {
-    // Get only the gameboard cells, not coordinate cells.
+    // Exclude coordinate cells based on game cells having row and column data.
     const gameCells = [...gridDiv.children].filter(
       (gameCell) => gameCell.dataset["row"] !== undefined
     );
@@ -101,7 +101,7 @@ export class UIManager {
         "mouseleave",
         this.targetGridOnMouseLeave.bind(this)
       );
-      cell.addEventListener("click", this.targetGridOnClick.bind(this));
+      cell.addEventListener("click", this.boundTargetGridOnClick);
     }
   }
 
@@ -132,12 +132,33 @@ export class UIManager {
     } else {
       cellDiv.classList.add("miss");
     }
-    cellDiv.removeEventListener("click", this.targetGridOnClick);
+    cellDiv.removeEventListener("click", this.boundTargetGridOnClick);
 
     // The computer takes its turn.
     if (this.players[1].type === Player.Types.CPU) {
-      this.takeTurn();
+      this.enemyTurn();
     }
+  }
+
+  enemyTurn() {
+    this.disablePlayerActions();
+    this.gameStatusDiv.textContent = UIManager.statusMessages.CPUTURN;
+
+    // Delay the enemy's response by 1-2 seconds.
+    const delay = (Math.random() + 1) * 1000;
+    setTimeout(() => {
+      this.takeTurn();
+      this.gameStatusDiv.textContent = UIManager.statusMessages.YOURTURN;
+      this.enablePlayerActions();
+    }, delay);
+  }
+
+  disablePlayerActions() {
+    this.targetGridDiv.classList.add("disabled");
+  }
+
+  enablePlayerActions() {
+    this.targetGridDiv.classList.remove("disabled");
   }
 
   takeTurn() {
@@ -192,4 +213,9 @@ export class UIManager {
       }
     }
   }
+
+  static statusMessages = Object.freeze({
+    YOURTURN: "Your turn - fire at enemy waters!",
+    CPUTURN: "Enemy's turn - choosing a target."
+  })
 }
