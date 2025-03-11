@@ -6,14 +6,23 @@
     <title>Battleship</title>
   </head>
   <body>
-    <div class="gameContainer">
-      <div id="shipGridContainer" class="gridContainer">
-        <h3>Your Grid</h3>
-        <div id="shipGrid" class="grid"></div>
+    <div>
+      <h1>Battleship</h1>
+      <div class="gameContainer">
+        <div id="shipGridContainer" class="gridContainer">
+          <h3>Your Fleet</h3>
+          <div id="shipGrid" class="grid"></div>
+        </div>
+        <div id="targetGridContainer" class="gridContainer">
+          <h3>Enemy Waters</h3>
+          <div id="targetGrid" class="grid"></div>
+        </div>
       </div>
-      <div id="targetGridContainer" class="gridContainer">
-        <h3>Target Grid</h3>
-        <div id="targetGrid" class="grid"></div>
+      <div class="gameStatus">
+        Game ready - place your ships!
+      </div>
+      <div style="text-align: center;">
+        <button id="startGame">Start Game</button>
       </div>
     </div>
   </body>
