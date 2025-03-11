@@ -88,7 +88,7 @@ h3 {
   transition: all 0.2s ease;
 }
 
-.gameCell:hover:not(.hit):not(.miss) {
+#targetGrid.game-active > .gameCell:hover:not(.coordinateCell):not(.hit):not(.miss) {
   background-color: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
 }
@@ -170,6 +170,10 @@ h3 {
   margin: 20px 0;
   text-align: center;
   border: 1px solid var(--light-blue);
+}
+
+.buttonContainer {
+    text-align: center;
 }
 
 button {

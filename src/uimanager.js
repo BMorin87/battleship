@@ -4,11 +4,12 @@ import { Player } from "./player.js";
 export class UIManager {
   constructor() {
     this.game = new Gameboard();
-    this.players = [new Player(), new Player(Player.Types.CPU)]
+    this.players = [new Player(), new Player(Player.Types.CPU)];
     this.currentPlayer = this.players[0];
     this.gameContainerDiv = document.querySelector(".gameContainer");
     this.shipGridDiv = document.querySelector("#shipGrid");
     this.targetGridDiv = document.querySelector("#targetGrid");
+    this.gameStatusDiv = document.querySelector(".gameStatus");
 
     this.setGridRowsAndColumns(this.currentPlayer);
     this.createGridWithCoordinates(this.shipGridDiv);
@@ -16,7 +17,12 @@ export class UIManager {
 
     this.drawShips(this.currentPlayer);
 
-    this.addTargetEventListeners(this.targetGridDiv);
+    const startButton = document.getElementById("startGame");
+    startButton.addEventListener("click", () => {
+      this.addTargetGridEventListeners(this.targetGridDiv);
+      this.targetGridDiv.classList.add("game-active");
+      this.gameStatusDiv.textContent = "Your turn - fire at enemy waters!"
+    });
   }
 
   // Set CSS grid based on gameboard size.
@@ -80,7 +86,7 @@ export class UIManager {
     }
   }
 
-  addTargetEventListeners(gridDiv) {
+  addTargetGridEventListeners(gridDiv) {
     // Get only the gameboard cells, not coordinate cells.
     const gameCells = [...gridDiv.children].filter(
       (gameCell) => gameCell.dataset["row"] !== undefined
