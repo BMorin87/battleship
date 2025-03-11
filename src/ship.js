@@ -9,8 +9,9 @@ export class Ship {
       this.hits++;
     }
   
-    setLocation(coordinates) {
-      this.location = coordinates;
+    // Ships occupy a number of game cells.
+    setLocations(cellArray) {
+      this.locations = cellArray;
     }
   
     isSunk() {
@@ -21,9 +22,7 @@ export class Ship {
     }
   
     static Orientations = Object.freeze({
-      // For horizontal ships, ship.location is at the left and the rest of the ship extends to the right.
       HORIZONTAL: "Horizontal",
-      // For vertical ships, ship.location is at the top and the rest of the ship extends down.
       VERTICAL: "Vertical",
     });
   }

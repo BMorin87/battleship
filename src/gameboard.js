@@ -1,49 +1,35 @@
 import { Cell } from "./cell.js";
-import { Player } from "./player.js";
 import { Ship } from "./ship.js";
 
 export class Gameboard {
   constructor(length = 9, width = 9, shipCount = 5) {
     this.columns = length;
     this.rows = width;
-    this.players = [new Player(), new Player()];
     this.shipCount = shipCount;
-    this.board = [];
-    this.missedShots = new Set();
+    this.gameboard = [];
+    this.pastShots = new Set();
 
-    this.createBoard();
-    this.createShips();
-    this.placeShips();
+    this.createboard();
   }
 
-  createBoard() {
+  createboard() {
     for (let i = 0; i < this.columns; i++) {
-      this.board[i] = [];
+      this.gameboard[i] = [];
       for (let j = 0; j < this.rows; j++) {
-        // Use j and i as x and y coordinates.
-        this.board[i].push(new Cell([i, j]));
+        this.gameboard[i].push(new Cell([i, j]));
       }
     }
   }
 
-  createShips() {
-    for (const player of this.players) {
-      for (let i = 0; i < this.shipCount; i++) {
-        player.ships.push(new Ship());
-      }
-    }
-  }
+  // This method places ships in the first available position.
+  placeShips(ships) {
+    for (const ship of ships) {
+      const coordinate = this.getFirstLegalPosition(ship);
+      const shipCells = this.getShipCells(coordinate, ship);
+      ship.setLocations(shipCells);
 
-  placeShips() {
-    for (const player of this.players) {
-      for (const ship of player.ships) {
-        const coordinates = this.getFirstLegalPosition(ship);
-        ship.setLocation(coordinates);
-
-        const shipCells = this.getShipCells(coordinates, ship);
-        for (const cell of shipCells) {
-          cell.setType(Cell.Types.SHIP);
-        }
+      for (const cell of shipCells) {
+        cell.setType(Cell.Types.SHIP);
       }
     }
   }
@@ -75,35 +61,26 @@ export class Gameboard {
     return false;
   }
 
-  receiveAttack(targetCoordinates, activePlayer) {
-    // Get an array of arrays that contain the target player's ship cells.
-    let targetShipCells = [];
-    for (const player of this.players) {
-      if (activePlayer === player) continue;
-      for (const ship of player.ships) {
-        const shipArray = this.getShipCells(ship.location, ship);
-        targetShipCells.push(shipArray);
-      }
-    }
+  receiveAttack(targetCoordinates, ships) {
+    this.pastShots.add(targetCoordinates);
     // Case: the attack hit a ship.
-    for (const cellArray of targetShipCells) {
-      const coordinates = [];
-      for (const cell of cellArray) {
-        coordinates.push(cell.coordinates);
-      }
-      if (this.containsTarget(coordinates, targetCoordinates)) {
-        const targetShip = this.getShipFromLocation(coordinates[0]);
-        targetShip.hit();
-        return true;
+    for (const ship of ships) {
+      for (const cell of ship.locations) {
+        if (
+          cell.coordinates[0] == targetCoordinates[0] &&
+          cell.coordinates[1] == targetCoordinates[1]
+        ) {
+          ship.hit();
+          return true;
+        }
       }
     }
+    
     // Case: the attack missed a ship.
-    const [x, y] = targetCoordinates;
-    const targetCell = this.board[x][y];
+    const targetCell = this.gameboard[targetCoordinates[0]][targetCoordinates[1]];
     if (targetCell.type === Cell.Types.OCEAN) {
       targetCell.setType(Cell.Types.MISS);
     }
-    this.missedShots.add(targetCoordinates);
     return false;
   }
 
@@ -112,9 +89,9 @@ export class Gameboard {
     const [x, y] = coordinates;
     for (let i = 0; i < ship.length; i++) {
       if (ship.orientation === Ship.Orientations.HORIZONTAL) {
-        cellArray.push(this.board[x + i][y]);
+        cellArray.push(this.gameboard[x + i][y]);
       } else if (ship.orientation === Ship.Orientations.VERTICAL) {
-        cellArray.push(this.board[x][y + i]);
+        cellArray.push(this.gameboard[x][y + i]);
       }
     }
     return cellArray;

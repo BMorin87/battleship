@@ -9,26 +9,31 @@ class UIManager {
     this.game = new Gameboard();
     this.currentPlayer = this.game.players[0];
     this.gameContainerDiv = document.querySelector(".gameContainer");
-    this.shipGridDiv = this.gameContainerDiv.querySelector("#shipGrid");
-    this.targetGridDiv = this.gameContainerDiv.querySelector("#targetGrid");
+    this.shipGridDiv = document.querySelector("#shipGrid");
+    this.targetGridDiv = document.querySelector("#targetGrid");
 
-    this.gridContainers = document.querySelectorAll(".gridContainer");
-    for (const grid of this.gridContainers) {
-      grid.style.setProperty("--columns", this.game.columns + 1); // +1 for row labels
-      grid.style.setProperty("--rows", this.game.rows + 1); // +1 for column labels
+    // Set CSS grid based on gameboard size.
+    const gridContainers = document.querySelectorAll(".gridContainer");
+    for (const gridContainer of gridContainers) {
+      const rows = this.players[0].shipBoard.rows;
+      const columns = this.players[0].shipBoard.columns;
+
+      // Add 1 for row and column labels.
+      gridContainer.style.setProperty("--rows", rows + 1);
+      gridContainer.style.setProperty("--columns", columns + 1);
     }
 
     this.createGridWithCoordinates(this.shipGridDiv);
     this.createGridWithCoordinates(this.targetGridDiv);
 
-    this.drawShips(this.game.players[0]);
+    this.drawShips(this.players[0]);
 
     this.addTargetEventListeners(this.targetGridDiv);
   }
 
   createGridWithCoordinates(gridDiv) {
     // Add column headers (numbers).
-    for (let i = 0; i <= this.game.columns; i++) {
+    for (let i = 0; i <= this.players[0].shipBoard.columns; i++) {
       const cell = document.createElement("div");
       cell.classList.add("gameCell", "coordinateCell");
 
@@ -41,7 +46,7 @@ class UIManager {
     }
 
     // Add rows.
-    for (let j = 0; j < this.game.rows; j++) {
+    for (let j = 0; j < this.players[0].shipBoard.rows; j++) {
       // Add row header (letter).
       const rowLabel = document.createElement("div");
       rowLabel.classList.add("gameCell", "coordinateCell", "rowHeader");
@@ -49,7 +54,7 @@ class UIManager {
       gridDiv.appendChild(rowLabel);
 
       // Add regular cells.
-      for (let i = 0; i < this.game.columns; i++) {
+      for (let i = 0; i < this.players[0].shipBoard.columns; i++) {
         const cell = document.createElement("div");
         cell.classList.add("gameCell");
         cell.dataset.row = j;
@@ -60,19 +65,15 @@ class UIManager {
   }
 
   drawShips(player) {
-    const shipCells = [];
     for (const ship of player.ships) {
-      const cells = this.game.getShipCells(ship.location, ship);
-      shipCells.push(...cells);
-    }
-    const cellDivs = this.shipGridDiv.children;
-    for (const cell of shipCells) {
-      for (const cellDiv of cellDivs) {
-        if (
-          cellDiv.dataset.row == cell.coordinates[0] &&
-          cellDiv.dataset.col == cell.coordinates[1]
-        ) {
-          cellDiv.classList.add("shipCell");
+      for (const cell of ship.locations) {
+        for (const cellDiv of this.shipGridDiv.children) {
+          if (
+            cellDiv.dataset.row == cell.coordinates[0] &&
+            cellDiv.dataset.col == cell.coordinates[1]
+          ) {
+            cellDiv.classList.add("shipCell");
+          }
         }
       }
     }
@@ -109,15 +110,79 @@ class UIManager {
 
   targetGridOnClick(event) {
     const cellDiv = event.target;
-    const gameCell = this.game.board[cellDiv.dataset.row][cellDiv.dataset.col];
-    const isHit = this.game.receiveAttack(
-      gameCell.coordinates,
-      this.currentPlayer
+    const coordinates = [cellDiv.dataset.row, cellDiv.dataset.col];
+
+    // Send the attack.
+    const attackedPlayer = this.players[1];
+    const isHit = this.players[0].targetBoard.receiveAttack(
+      coordinates,
+      attackedPlayer.ships
     );
+
+    // Display the result of the attack.
     if (isHit) {
       cellDiv.classList.add("hit");
     } else {
       cellDiv.classList.add("miss");
+    }
+    cellDiv.removeEventListener("click", this.targetGridOnClick);
+
+    // The computer takes its turn.
+    if (this.players[1].type === Player.Types.CPU) {
+      this.takeTurn();
+    }
+  }
+
+  takeTurn() {
+    const coordinates = this.chooseTarget();
+
+    const attackedPlayer = this.players[0];
+    const isHit = attackedPlayer.shipBoard.receiveAttack(
+      coordinates,
+      attackedPlayer.ships
+    );
+
+    const cellDiv = this.getCellDivFromCoordinates(coordinates);
+    if (isHit) {
+      cellDiv.classList.add("hit");
+    } else {
+      cellDiv.classList.add("miss");
+    }
+  }
+
+  chooseTarget() {
+    const rows = this.players[0].shipBoard.rows;
+    const columns = this.players[0].shipBoard.columns;
+
+    // Choose coordinates at random, but don't repeat shots.
+    let isOldTarget, targetX, targetY;
+    do {
+      targetX = this.randomInt(rows);
+      targetY = this.randomInt(columns);
+      
+      isOldTarget = false;
+      for (const pastShot of this.players[1].targetBoard.pastShots) {
+        if (targetX == pastShot[0] && targetY === pastShot[1]) {
+          isOldTarget = true;
+          break;
+        }
+      }
+    } while (isOldTarget);
+
+    return [targetX, targetY];
+  }
+
+  // Returns a random natural number strictly smaller than n.
+  randomInt(n) {
+    return Math.floor(Math.random() * n);
+  }
+
+  getCellDivFromCoordinates(coordinates) {
+    const [x, y] = coordinates;
+    for (const cellDiv of this.shipGridDiv.children) {
+      if (cellDiv.dataset.row == x && cellDiv.dataset.col == y) {
+        return cellDiv;
+      }
     }
   }
 }
