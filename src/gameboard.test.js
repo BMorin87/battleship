@@ -55,7 +55,7 @@ describe("Gameboard tests", () => {
     expect(targetCell.type).toBe(Cell.Types.MISS);
   });
 
-  test("Missed shots are recorded.", () => {
+  test("Past shots are recorded.", () => {
     const game = new Gameboard();
     const ships = [new Ship(), new Ship(), new Ship()];
     game.placeShips(ships);
@@ -63,7 +63,7 @@ describe("Gameboard tests", () => {
     if (targetCell.type === Cell.Types.OCEAN) {
       game.receiveAttack(targetCell.coordinates, ships);
     }
-    const isRecorded = game.missedShots.has(targetCell.coordinates);
+    const isRecorded = game.pastShots.has(targetCell.coordinates);
     expect(isRecorded).toBe(true);
   });
 });
