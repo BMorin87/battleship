@@ -87,7 +87,7 @@ export class UIManager {
   }
 
   addTargetGridEventListeners(gridDiv) {
-    // Exclude coordinate cells based on game cells having row and column data.
+    // Exclude coordinate cells based on game cells having row data.
     const gameCells = [...gridDiv.children].filter(
       (gameCell) => gameCell.dataset["row"] !== undefined
     );
@@ -147,7 +147,7 @@ export class UIManager {
     // Delay the enemy's response by 1-2 seconds.
     const delay = (Math.random() + 1) * 1000;
     setTimeout(() => {
-      this.takeTurn();
+      this.executeAttack();
       this.gameStatusDiv.textContent = UIManager.statusMessages.YOURTURN;
       this.enablePlayerActions();
     }, delay);
@@ -161,11 +161,11 @@ export class UIManager {
     this.targetGridDiv.classList.remove("disabled");
   }
 
-  takeTurn() {
+  executeAttack() {
     const coordinates = this.chooseTarget();
 
     const attackedPlayer = this.players[0];
-    const isHit = attackedPlayer.shipBoard.receiveAttack(
+    const isHit = this.players[1].targetBoard.receiveAttack(
       coordinates,
       attackedPlayer.ships
     );
@@ -185,12 +185,12 @@ export class UIManager {
     // Choose coordinates at random, but don't repeat shots.
     let isOldTarget, targetX, targetY;
     do {
-      targetX = this.randomInt(rows);
-      targetY = this.randomInt(columns);
+      targetX = this.randomNum(rows);
+      targetY = this.randomNum(columns);
 
       isOldTarget = false;
       for (const pastShot of this.players[1].targetBoard.pastShots) {
-        if (targetX == pastShot[0] && targetY === pastShot[1]) {
+        if (targetX === pastShot[0] && targetY === pastShot[1]) {
           isOldTarget = true;
           break;
         }
@@ -201,7 +201,7 @@ export class UIManager {
   }
 
   // Returns a random natural number strictly smaller than n.
-  randomInt(n) {
+  randomNum(n) {
     return Math.floor(Math.random() * n);
   }
 
