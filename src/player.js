@@ -1,19 +1,21 @@
 import { Gameboard } from "./gameboard.js";
 import { Ship } from "./ship.js";
-import { Utility } from "./utility.js"
+import { Utility } from "./utility.js";
 
 export class Player {
   constructor(playerType = Player.Types.HUMAN, shipCount = 5) {
     this.type = playerType;
     this.shipCount = shipCount;
     this.ships = [];
-    for (let i = 0; i < shipCount; i++) {
-      this.ships.push(new Ship());
-    }
-
     this.shipBoard = new Gameboard();
-    this.shipBoard.placeShips(this.ships);
     this.targetBoard = new Gameboard();
+
+    if (playerType === Player.Types.CPU) {
+      for (let i = 0; i < shipCount; i++) {
+        this.ships.push(new Ship());
+      }
+      this.shipBoard.placeShips(this.ships);
+    }
   }
 
   static Types = Object.freeze({
