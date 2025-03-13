@@ -72,6 +72,11 @@ export class UIManager {
   }
 
   drawShips(player) {
+    // Erase any ships.
+    for (const cellDiv of this.shipGridDiv.children) {
+      cellDiv.classList.remove("shipCell");
+    }
+    // Update the display.
     for (const ship of player.ships) {
       for (const cell of ship.locations) {
         for (const cellDiv of this.shipGridDiv.children) {
@@ -87,7 +92,7 @@ export class UIManager {
   }
 
   addTargetGridEventListeners(gridDiv) {
-    // Exclude coordinate cells based on game cells having row data.
+    // Exclude coordinate cells based on game cell Divs having row data.
     const gameCells = [...gridDiv.children].filter(
       (gameCell) => gameCell.dataset["row"] !== undefined
     );
@@ -162,13 +167,11 @@ export class UIManager {
   }
 
   executeAttack() {
-    const coordinates = this.chooseTarget();
-
+    const attacker = this.players[1];
     const attackedPlayer = this.players[0];
-    const isHit = this.players[1].targetBoard.receiveAttack(
-      coordinates,
-      attackedPlayer.ships
-    );
+
+    const coordinates = attacker.chooseTarget(attackedPlayer);
+    const isHit = attacker.sendAttack(coordinates, attackedPlayer);
 
     const cellDiv = this.getCellDivFromCoordinates(coordinates);
     if (isHit) {
@@ -178,33 +181,7 @@ export class UIManager {
     }
   }
 
-  chooseTarget() {
-    const rows = this.players[0].shipBoard.rows;
-    const columns = this.players[0].shipBoard.columns;
-
-    // Choose coordinates at random, but don't repeat shots.
-    let isOldTarget, targetX, targetY;
-    do {
-      targetX = this.randomNum(rows);
-      targetY = this.randomNum(columns);
-
-      isOldTarget = false;
-      for (const pastShot of this.players[1].targetBoard.pastShots) {
-        if (targetX === pastShot[0] && targetY === pastShot[1]) {
-          isOldTarget = true;
-          break;
-        }
-      }
-    } while (isOldTarget);
-
-    return [targetX, targetY];
-  }
-
-  // Returns a random natural number strictly smaller than n.
-  randomNum(n) {
-    return Math.floor(Math.random() * n);
-  }
-
+  // For displaying the enemy's attack on the player's ship grid.
   getCellDivFromCoordinates(coordinates) {
     const [x, y] = coordinates;
     for (const cellDiv of this.shipGridDiv.children) {

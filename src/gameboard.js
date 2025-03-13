@@ -62,22 +62,23 @@ export class Gameboard {
   }
 
   receiveAttack(targetCoordinates, ships) {
+    // targetCoordinates are verified not to be in pastShots when generated.
     this.pastShots.add(targetCoordinates);
+    const [x, y] = targetCoordinates;
+
     // Case: the attack hit a ship.
     for (const ship of ships) {
       for (const cell of ship.locations) {
-        if (
-          cell.coordinates[0] == targetCoordinates[0] &&
-          cell.coordinates[1] == targetCoordinates[1]
-        ) {
+        if (cell.coordinates[0] == x && cell.coordinates[1] == y) {
           ship.hit();
           return true;
         }
       }
     }
-    
+
     // Case: the attack missed a ship.
-    const targetCell = this.gameboard[targetCoordinates[0]][targetCoordinates[1]];
+    const targetCell =
+      this.gameboard[x][y];
     if (targetCell.type === Cell.Types.OCEAN) {
       targetCell.setType(Cell.Types.MISS);
     }
