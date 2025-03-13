@@ -1,5 +1,6 @@
 import { Gameboard } from "./gameboard.js";
 import { Ship } from "./ship.js";
+import { Utility } from "./utility.js"
 
 export class Player {
   constructor(playerType = Player.Types.HUMAN, shipCount = 5) {
@@ -36,8 +37,8 @@ export class Player {
     // Choose coordinates at random, but don't repeat shots.
     let isNewTarget, targetX, targetY;
     do {
-      targetX = this.randomNum(targetPlayer.shipBoard.rows);
-      targetY = this.randomNum(targetPlayer.shipBoard.columns);
+      targetX = Utility.randomNum(targetPlayer.shipBoard.rows);
+      targetY = Utility.randomNum(targetPlayer.shipBoard.columns);
 
       isNewTarget = true;
       for (const pastShot of this.targetBoard.pastShots) {
@@ -50,10 +51,5 @@ export class Player {
     } while (!isNewTarget);
 
     return [targetX, targetY];
-  }
-
-  // Returns a random natural number strictly smaller than n.
-  randomNum(n) {
-    return Math.floor(Math.random() * n);
   }
 }

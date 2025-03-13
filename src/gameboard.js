@@ -1,5 +1,6 @@
 import { Cell } from "./cell.js";
 import { Ship } from "./ship.js";
+import { Utility } from "./utility.js";
 
 export class Gameboard {
   constructor(length = 9, width = 9, shipCount = 5) {
@@ -24,7 +25,7 @@ export class Gameboard {
   // This method places ships in the first available position.
   placeShips(ships) {
     for (const ship of ships) {
-      const coordinate = this.getFirstLegalPosition(ship);
+      const coordinate = this.getRandomLegalPosition(ship);
       const shipCells = this.getShipCells(coordinate, ship);
       ship.setLocations(shipCells);
 
@@ -34,20 +35,26 @@ export class Gameboard {
     }
   }
 
-  // Find the first cell where the ship fits.
-  getFirstLegalPosition(ship) {
-    for (let j = 0; j < this.rows; j++) {
-      for (let i = 0; i < this.columns; i++) {
-        if (this.shipIsOutOfBounds(i, j, ship)) continue;
+  getRandomLegalPosition(ship) {
+    let targetX, targetY;
+    let isLegal = false;
+    do {
+      targetX = Utility.randomNum(this.rows);
+      targetY = Utility.randomNum(this.columns);
 
-        const testCells = this.getShipCells([i, j], ship);
-        const isAllOceans = testCells.every(
-          (cell) => cell.type === Cell.Types.OCEAN
-        );
-        // Success, return the valid ship coordinates.
-        if (isAllOceans) return [i, j];
+      if (this.shipIsOutOfBounds(targetX, targetY, ship)) continue;
+
+      const testCells = this.getShipCells([targetX, targetY], ship);
+      const isAllOceans = testCells.every(
+        (cell) => cell.type === Cell.Types.OCEAN
+      );
+      if (isAllOceans) {
+        isLegal = true;
+        break;
       }
-    }
+    } while (!isLegal);
+
+    return [targetX, targetY];
   }
 
   shipIsOutOfBounds(x, y, ship) {
@@ -56,8 +63,9 @@ export class Gameboard {
         x + ship.length > this.columns) ||
       (ship.orientation === Ship.Orientations.VERTICAL &&
         y + ship.length > this.rows)
-    )
+    ) {
       return true;
+    }
     return false;
   }
 
@@ -77,8 +85,7 @@ export class Gameboard {
     }
 
     // Case: the attack missed a ship.
-    const targetCell =
-      this.gameboard[x][y];
+    const targetCell = this.gameboard[x][y];
     if (targetCell.type === Cell.Types.OCEAN) {
       targetCell.setType(Cell.Types.MISS);
     }
