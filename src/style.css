@@ -266,6 +266,7 @@ button:hover {
 }
 
 .dockShip.vertical {
+  display: flex;
   flex-direction: column;
 }
 
@@ -294,4 +295,34 @@ button:disabled {
   display: flex;
   justify-content: center;
   gap: 15px;
+}
+
+.ship-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.rotate-btn {
+  margin-left: 10px;
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.rotate-btn:hover {
+  background-color: #45a049;
+}
+
+.rotate-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
