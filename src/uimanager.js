@@ -115,52 +115,52 @@ export class UIManager {
 
   initializeShipDock() {
     this.currentPlayer.ships = [];
-  
+
     const shipLengths = [4, 4, 3, 3, 2];
-  
+
     shipLengths.forEach((length, index) => {
       // Create ship object.
       const ship = new Ship(length, Ship.Orientations.HORIZONTAL);
       this.currentPlayer.ships.push(ship);
-  
+
       // Create container for ship and rotate button
       const shipContainer = document.createElement("div");
       shipContainer.classList.add("ship-container");
-  
+
       // Create visual representation.
       const shipDiv = document.createElement("div");
       shipDiv.classList.add("dockShip");
       shipDiv.dataset.shipIndex = index;
-  
+
       // Add ship cells.
       for (let i = 0; i < length; i++) {
         const cellDiv = document.createElement("div");
         cellDiv.classList.add("dockShipCell");
         shipDiv.appendChild(cellDiv);
       }
-  
+
       // Add rotate button
       const rotateBtn = document.createElement("button");
       rotateBtn.textContent = "↻";
       rotateBtn.classList.add("rotate-btn");
       rotateBtn.addEventListener("click", () => {
         // Toggle ship orientation in the object
-        ship.orientation = 
+        ship.orientation =
           ship.orientation === Ship.Orientations.HORIZONTAL
             ? Ship.Orientations.VERTICAL
             : Ship.Orientations.HORIZONTAL;
-        
+
         // Toggle the visual orientation
         shipDiv.classList.toggle("vertical");
       });
-  
+
       shipDiv.draggable = true;
       shipDiv.addEventListener("dragstart", (e) => this.onDragStart(e, index));
-  
+
       // Add elements to container
       shipContainer.appendChild(shipDiv);
       shipContainer.appendChild(rotateBtn);
-  
+
       this.dockContainerDiv.appendChild(shipContainer);
     });
     this.clearShipGrid();
@@ -200,15 +200,15 @@ export class UIManager {
       e.preventDefault();
       return;
     }
-  
+
     this.shipBeingDragged = shipIndex;
     const ship = this.currentPlayer.ships[shipIndex];
-    
+
     // Set the orientation based on the ship's current orientation
     this.shipOrientation = ship.orientation;
-    
+
     e.dataTransfer.setData("text/plain", shipIndex);
-  
+
     // Set drag image offset to center of first cell
     const rect = e.target.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
@@ -253,39 +253,39 @@ export class UIManager {
 
   onDrop(e, cell) {
     e.preventDefault();
-  
+
     const shipIndex = this.shipBeingDragged;
     const ship = this.currentPlayer.ships[shipIndex];
     const row = parseInt(cell.dataset.row);
     const col = parseInt(cell.dataset.col);
-  
+
     // Check if placement is valid
     if (
       this.validateShipPlacement(row, col, ship.length, this.shipOrientation)
     ) {
       // Place the ship
       this.placeShip(shipIndex, row, col, this.shipOrientation);
-  
+
       // Mark ship as placed in the dock
       const shipDiv = document.querySelector(
         `.dockShip[data-ship-index="${shipIndex}"]`
       );
       shipDiv.classList.add("placed");
-      
+
       // Disable the corresponding rotate button
       const shipContainer = shipDiv.parentElement;
       const rotateBtn = shipContainer.querySelector(".rotate-btn");
       if (rotateBtn) {
         rotateBtn.disabled = true;
       }
-  
+
       // Check if all ships are placed and enable start button if they are
       this.playerShipsPlaced++;
       if (this.playerShipsPlaced === this.currentPlayer.ships.length) {
         this.startButton.disabled = false;
       }
     }
-  
+
     // Clear preview
     this.clearShipPreview();
     cell.classList.remove("hovered");
@@ -354,27 +354,32 @@ export class UIManager {
     }
   }
 
+  // In UIManager.placeShip()
   placeShip(shipIndex, row, column, orientation) {
     const ship = this.currentPlayer.ships[shipIndex];
     ship.orientation = orientation;
-  
-    // Place ship on grid visually.
+
+    // Clear ship's previous locations
+    ship.locations = [];
+
+    // Place ship on grid visually
     for (let i = 0; i < ship.length; i++) {
       let shipRow = row;
       let shipCol = column;
-  
+
       if (orientation === Ship.Orientations.HORIZONTAL) {
-        shipCol += i;
+        shipCol += i; // Horizontal ships increase column
       } else {
-        shipRow += i;
+        shipRow += i; // Vertical ships increase row
       }
-  
+
       const cell = this.getCellDivFromCoordinates([shipRow, shipCol]);
       if (cell) {
         cell.classList.add("shipCell");
       }
     }
-  
+
+    // Get ship cells from the gameboard
     const shipCells = this.currentPlayer.shipBoard.getShipCells(
       [row, column],
       ship
@@ -428,58 +433,29 @@ export class UIManager {
     }
   }
 
-  /* rotateShipBeingDragged() {
-    // Toggle orientation
-    this.shipOrientation =
-      this.shipOrientation === Ship.Orientations.HORIZONTAL
-        ? Ship.Orientations.VERTICAL
-        : Ship.Orientations.HORIZONTAL;
+  randomizeShips() {
+    this.players[0] = new Player();
+    this.currentPlayer = this.players[0];
 
-    // Update visual representation in dock
-    const shipDiv = document.querySelector(
-      `.dockShip[data-ship-index="${this.shipBeingDragged}"]`
-    );
-    if (shipDiv) {
-      shipDiv.classList.toggle("vertical");
+    this.dockContainerDiv.innerHTML = "";
+    this.playerShipsPlaced = this.currentPlayer.ships.length;
 
-      // Re-trigger dragover to update preview if currently over the grid
-      const hoveredCell = document.querySelector(
-        ".shipPreview, .invalidPlacement"
-      );
-      if (hoveredCell) {
-        const event = new MouseEvent("dragover", {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        });
-        hoveredCell.dispatchEvent(event);
-      }
+    this.drawShips(this.currentPlayer);
+
+    this.startButton.disabled = false;
+
+    this.initializeShipDock();
+    const dockShips = document.querySelectorAll(".dockShip");
+    const rotateButtons = document.querySelectorAll(".rotate-btn");
+
+    for (const ship of dockShips) {
+      ship.classList.add("placed");
     }
-  } */
 
-    randomizeShips() {
-      this.players[0] = new Player();
-      this.currentPlayer = this.players[0];
-    
-      this.dockContainerDiv.innerHTML = "";
-      this.playerShipsPlaced = this.currentPlayer.ships.length;
-    
-      this.drawShips(this.currentPlayer);
-    
-      this.startButton.disabled = false;
-    
-      this.initializeShipDock();
-      const dockShips = document.querySelectorAll(".dockShip");
-      const rotateButtons = document.querySelectorAll(".rotate-btn");
-      
-      for (const ship of dockShips) {
-        ship.classList.add("placed");
-      }
-      
-      for (const button of rotateButtons) {
-        button.disabled = true;
-      }
+    for (const button of rotateButtons) {
+      button.disabled = true;
     }
+  }
 
   addTargetGridEventListeners(gridDiv) {
     // Exclude coordinate cells based on game cell Divs having row data.
@@ -539,8 +515,8 @@ export class UIManager {
     this.disablePlayerActions();
     this.gameStatusDiv.textContent = UIManager.statusMessages.CPUTURN;
 
-    // Delay the enemy's response by 1-2 seconds.
-    const delay = (Math.random() + 1) * 1000;
+    // Delay the enemy's response by ~1 second.
+    const delay = (Math.random() + 0.5) * 1000;
     setTimeout(() => {
       this.executeAttack();
       this.gameStatusDiv.textContent = UIManager.statusMessages.YOURTURN;

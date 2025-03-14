@@ -97,9 +97,9 @@ export class Gameboard {
     const [x, y] = coordinates;
     for (let i = 0; i < ship.length; i++) {
       if (ship.orientation === Ship.Orientations.HORIZONTAL) {
-        cellArray.push(this.gameboard[x + i][y]);
+        cellArray.push(this.gameboard[x][y + i]); // Horizontal increases column
       } else if (ship.orientation === Ship.Orientations.VERTICAL) {
-        cellArray.push(this.gameboard[x][y + i]);
+        cellArray.push(this.gameboard[x + i][y]); // Vertical increases row
       }
     }
     return cellArray;
