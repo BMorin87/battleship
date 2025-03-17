@@ -45,6 +45,9 @@ export class Gameboard {
       if (this.shipIsOutOfBounds(targetX, targetY, ship)) continue;
 
       const testCells = this.getShipCells([targetX, targetY], ship);
+
+      if (testCells.some(cell => cell === undefined)) continue;
+
       const isAllOceans = testCells.every(
         (cell) => cell.type === Cell.Types.OCEAN
       );

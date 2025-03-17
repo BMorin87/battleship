@@ -10,8 +10,8 @@ export class UIManager {
     this.targetGridDiv = document.querySelector("#targetGrid");
     this.gameStatusDiv = document.querySelector(".gameStatus");
     this.dockContainerDiv = document.querySelector(".dockContainer");
-    this.startButton = document.getElementById("startGame");
-    this.randomizeButton = document.getElementById("randomizeShips");
+    this.startButton = document.querySelector("#startGame");
+    this.randomizeButton = document.querySelector("#randomizeShips");
     // A reference to this event is needed so that it can be removed.
     this.boundTargetGridOnClick = this.targetGridOnClick.bind(this);
 

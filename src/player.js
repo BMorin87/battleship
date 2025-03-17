@@ -10,11 +10,20 @@ export class Player {
     this.shipBoard = new Gameboard();
     this.targetBoard = new Gameboard();
 
+    // For humans, the ships are created in the dock UI component.
     if (playerType === Player.Types.CPU) {
-      for (let i = 0; i < shipCount; i++) {
-        this.ships.push(new Ship());
-      }
+      const ship1 = new Ship(4, this.randomOrientation());
+      this.ships.push(ship1);
+      const ship2 = new Ship(4, this.randomOrientation());
+      this.ships.push(ship2);
+      const ship3 = new Ship(3, this.randomOrientation());
+      this.ships.push(ship3);
+      const ship4 = new Ship(3, this.randomOrientation());
+      this.ships.push(ship4);
+      const ship5 = new Ship(2, this.randomOrientation());
+      this.ships.push(ship5);
       this.shipBoard.placeShips(this.ships);
+      console.log(this.shipBoard);
     }
   }
 
@@ -22,6 +31,14 @@ export class Player {
     HUMAN: "Human",
     CPU: "CPU",
   });
+
+  randomOrientation() {
+    const coinFlip = Math.random() < 0.5;
+    const orientation = coinFlip
+      ? Ship.Orientations.HORIZONTAL
+      : Ship.Orientations.VERTICAL;
+    return orientation;
+  }
 
   sendAttack(coordinates, attackedPlayer) {
     const isHit = this.targetBoard.receiveAttack(
