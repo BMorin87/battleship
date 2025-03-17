@@ -23,7 +23,6 @@ export class Player {
       const ship5 = new Ship(2, this.randomOrientation());
       this.ships.push(ship5);
       this.shipBoard.placeShips(this.ships);
-      console.log(this.shipBoard);
     }
   }
 

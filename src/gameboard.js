@@ -63,9 +63,9 @@ export class Gameboard {
   shipIsOutOfBounds(x, y, ship) {
     if (
       (ship.orientation === Ship.Orientations.HORIZONTAL &&
-        x + ship.length > this.columns) ||
+        y + ship.length > this.columns) ||
       (ship.orientation === Ship.Orientations.VERTICAL &&
-        y + ship.length > this.rows)
+        x + ship.length > this.rows)
     ) {
       return true;
     }
