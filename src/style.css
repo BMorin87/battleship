@@ -326,3 +326,31 @@ button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
 }
+
+.victory {
+  color: green;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.defeat {
+  color: red;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+#playAgain {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#playAgain:hover {
+  background-color: #45a049;
+}

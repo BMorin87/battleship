@@ -385,37 +385,37 @@ export class UIManager {
   randomizeShips() {
     // Clear current ships
     this.clearShipGrid();
-    
+
     // Create new player with CPU type to get randomly placed ships
     const tempPlayer = new Player(Player.Types.CPU);
-    
+
     // Update the current player's ships with the randomly placed ones
     this.currentPlayer.ships = [];
     for (const ship of tempPlayer.ships) {
       this.currentPlayer.ships.push(ship);
     }
-    
+
     // Update the current player's shipBoard to match
     this.currentPlayer.shipBoard = tempPlayer.shipBoard;
-    
+
     // Mark all ships as placed
     this.playerShipsPlaced = this.currentPlayer.ships.length;
-    
+
     // Update the visual grid
     this.drawShips(this.currentPlayer);
-    
+
     // Update UI elements
     const dockShips = document.querySelectorAll(".dockShip");
     const rotateButtons = document.querySelectorAll(".rotate-btn");
-    
+
     for (const ship of dockShips) {
       ship.classList.add("placed");
     }
-    
+
     for (const button of rotateButtons) {
       button.disabled = true;
     }
-    
+
     // Enable the start button
     this.startButton.disabled = false;
   }
@@ -468,10 +468,94 @@ export class UIManager {
     }
     cellDiv.removeEventListener("click", this.boundTargetGridOnClick);
 
+    // Check for victory.
+    if (attackedPlayer.allShipsSunk()) {
+      this.endGame(true);
+      return;
+    }
+
     // The computer takes its turn.
     if (this.players[1].type === Player.Types.CPU) {
       this.enemyTurn();
     }
+  }
+
+  endGame(playerWon) {
+    this.disablePlayerActions();
+
+    const gameCells = [...this.targetGridDiv.children].filter(
+      (gameCell) => gameCell.dataset["row"] !== undefined
+    );
+    for (const cell of gameCells) {
+      cell.removeEventListener(
+        "mouseenter",
+        this.targetGridOnMouseEnter.bind(this)
+      );
+      cell.removeEventListener(
+        "mouseleave",
+        this.targetGridOnMouseLeave.bind(this)
+      );
+      cell.removeEventListener("click", this.boundTargetGridOnClick);
+    }
+
+    if (playerWon) {
+      if (playerWon) {
+        this.gameStatusDiv.textContent = UIManager.statusMessages.VICTORY;
+        this.gameStatusDiv.classList.add("victory");
+      } else {
+        this.gameStatusDiv.textContent = UIManager.statusMessages.DEFEAT;
+        this.gameStatusDiv.classList.add("defeat");
+      }
+    }
+
+    // Add option to play again
+    const playAgainButton = document.createElement("button");
+    playAgainButton.textContent = "Play Again";
+    playAgainButton.id = "playAgain";
+    playAgainButton.addEventListener("click", () => this.resetGame());
+    this.gameContainerDiv.appendChild(playAgainButton);
+  }
+
+  resetGame() {
+    // Remove play again button
+    const playAgainButton = document.getElementById("playAgain");
+    if (playAgainButton) {
+      playAgainButton.remove();
+    }
+
+    // Reset game state
+    this.gameStatusDiv.classList.remove("victory", "defeat");
+    this.targetGridDiv.classList.remove("game-active", "disabled");
+
+    // Reset players
+    this.players = [new Player(), new Player(Player.Types.CPU)];
+    this.currentPlayer = this.players[0];
+
+    // Clear grids
+    this.shipGridDiv.innerHTML = "";
+    this.targetGridDiv.innerHTML = "";
+
+    // Recreate UI
+    this.createGridWithCoordinates(this.shipGridDiv);
+    this.createGridWithCoordinates(this.targetGridDiv);
+
+    // Reset ship placement state
+    this.shipBeingDragged = null;
+    this.shipOrientation = Ship.Orientations.HORIZONTAL;
+    this.playerShipsPlaced = 0;
+
+    // Recreate ship dock
+    this.dockContainerDiv.innerHTML = "";
+    this.initializeShipDock();
+    this.addShipPlacementEvents();
+
+    // Show the UI elements again
+    document.getElementById("shipDock").style.display = "block";
+    this.randomizeButton.style.display = "inline-block";
+    this.startButton.style.display = "inline-block";
+    this.startButton.disabled = true;
+
+    this.gameStatusDiv.textContent = "Place your ships";
   }
 
   enemyTurn() {
@@ -508,6 +592,10 @@ export class UIManager {
     } else {
       cellDiv.classList.add("miss");
     }
+
+    if (attackedPlayer.allShipsSunk()) {
+      this.endGame(false);
+    }
   }
 
   getCellDivFromCoordinates(coordinates) {
@@ -522,5 +610,7 @@ export class UIManager {
   static statusMessages = Object.freeze({
     YOURTURN: "Your turn - fire at enemy waters!",
     CPUTURN: "Enemy's turn - choosing a target.",
+    VICTORY: "Victory! You've sunk all enemy ships!",
+    DEFEAT: "Defeat! All your ships have been sunk!",
   });
 }

@@ -70,4 +70,8 @@ export class Player {
 
     return [targetX, targetY];
   }
+
+  allShipsSunk() {
+    return this.ships.every(ship => ship.isSunk());
+  }
 }
